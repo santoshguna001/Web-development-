@@ -5,14 +5,14 @@ var express = require('express'),
 
 var OAuth = require('oauth');
 var header = {
-    "X-Yahoo-App-Id": "ASsCn854"
+    "X-Yahoo-App-Id": "app-id"
 };
 
 var request = new OAuth.OAuth(
     null,
     null,
-    'dj0yJmk9alJpMDJpZm5CdnJKJmQ9WVdrOVFWTnpRMjQ0TlRRbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTI3',
-    '0725b693b82195835061400c6440ead65c7fac44',
+    'consumer-key',
+    'consumer-secret',
     '1.0',
     null,
     'HMAC-SHA1',
