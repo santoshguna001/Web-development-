@@ -20,7 +20,7 @@ app.get('/', function(req, res){
 	res.render('landing');
 });
 
-app.get('/index', function(req, res){
+app.get('/campgrounds', function(req, res){
 
 	Campground.find({}, function(err, campgrounds){
 		if(err){
@@ -45,7 +45,7 @@ app.post('/campgrounds', function(req, res){
 			if(err){
 				console.log(err);
 			}else{
-				res.redirect('index');
+				res.redirect('campgrounds');
 			}
 		});
 });
@@ -55,7 +55,6 @@ app.get("/campgrounds/:id", function(req, res){
 		if(err){
 			console.log('Error loading the given id' + req.params.id.trim());
 		}else {
-			console.log(campground);
 			res.render('show', {campground: campground});
 		}
 	});
