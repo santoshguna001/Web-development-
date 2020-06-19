@@ -9,3 +9,8 @@
 .card .caption-full {
     padding: 9px;
 }
+
+#deleteForm,
+#deleteComment {
+    display: inline;
+}

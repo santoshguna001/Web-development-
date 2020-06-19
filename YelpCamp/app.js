@@ -7,7 +7,8 @@ var express = require('express'),
     passport = require('passport'),
     localStrategy = require('passport-local'),
     User = require('./models/user'),
-    seedDB = require('./seeds');
+    seedDB = require('./seeds'),
+    methodOveride = require('method-override');
 
 //Requiring routes
 var commentRoutes = require('./routes/comments'),
@@ -21,6 +22,7 @@ mongoose.connect("mongodb://localhost:27017/YelpCamp", { useNewUrlParser: true, 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
+app.use(methodOveride('_method'));
 
 app.use(require('express-session')({
     secret: 'This is my secret key',
