@@ -8,7 +8,8 @@ var express = require('express'),
     localStrategy = require('passport-local'),
     User = require('./models/user'),
     seedDB = require('./seeds'),
-    methodOveride = require('method-override');
+    methodOveride = require('method-override'),
+    flash = require('connect-flash');
 
 //Requiring routes
 var commentRoutes = require('./routes/comments'),
@@ -18,11 +19,12 @@ var commentRoutes = require('./routes/comments'),
 
 
 //seedDB(); //seed the database
-mongoose.connect("mongodb://localhost:27017/YelpCamp", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect("mongodb://localhost:27017/YelpCamp", { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: true });
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
 app.use(methodOveride('_method'));
+app.use(flash());
 
 app.use(require('express-session')({
     secret: 'This is my secret key',
@@ -39,6 +41,8 @@ passport.deserializeUser(User.deserializeUser());
 
 app.use(function(req, res, next) {
     res.locals.currentUser = req.user;
+    res.locals.error = req.flash('error');
+    res.locals.success = req.flash('success');
     next();
 });
 

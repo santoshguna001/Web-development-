@@ -4,6 +4,7 @@ mongoose.connect("mongodb://localhost:27017/YelpCamp", { useNewUrlParser: true, 
 var campgroundSchema = new mongoose.Schema({
     name: String,
     image: String,
+    price: String,
     description: String,
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
