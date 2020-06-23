@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 
     <div class="container">
-        <form action="/login" method="post" style='width: 50%; margin: 5px auto; padding: 100px 100px 20px 20px;'>
+        <form action="/login" method="post" style='width: 50%; margin: auto auto;'>
             <div class="form-group">
                 <label for="username">User Name</label>
                 <input type="text" name='username' class="form-control" id="username" placeholder="Enter username" required>
@@ -9,6 +9,9 @@
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" class="form-control" id="password" name='password' placeholder="Enter password" required>
+            </div>
+            <div style="margin-bottom: 20px ;">
+                <a href="/register">Don't have an account? Register here</a>
             </div>
             <button type="submit" class="btn btn-secondary" style="margin: 0 auto; display: block;">Submit</button>
         </form>

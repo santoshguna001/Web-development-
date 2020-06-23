@@ -9,6 +9,7 @@ router.get('/', function(req, res) {
 });
 
 router.get('/reroute', middleware.isLoggedIn, function(req, res) {
+    req.flash('success', 'Logged in successfully!');
     if (req.session.returnTo) {
         var url = req.session.returnTo;
         delete req.session.returnTo;
@@ -23,7 +24,7 @@ router.get('/landing', middleware.isLoggedIn, function(req, res) {
 });
 
 router.get('/secret', middleware.isLoggedIn, function(req, res) {
-    res.send('Another secret');
+    res.render('secret');
 });
 
 router.get('/register', function(req, res) {
