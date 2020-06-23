@@ -5,7 +5,9 @@ var express = require('express'),
     passport = require('passport'),
     localStrategy = require('passport-local'),
     passportLocalStrategy = require('passport-local-mongoose'),
-    User = require('./models/user');
+    User = require('./models/user'),
+    flash = require('connect-flash'),
+    authRoutes = require('./routes/index');
 
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
@@ -15,10 +17,15 @@ app.use(require('express-session')({
     resave: false,
     saveUninitialized: false
 }));
+app.use(flash());
+app.enable('trust proxy');
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(function(req, res, next) {
     res.locals.currentUser = req.user;
+    res.locals.error = req.flash('error');
+    res.locals.success = req.flash('success');
     next();
 });
 
@@ -33,54 +40,7 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 portNumber = process.env.PORT || 3000;
 ipAddress = process.env.IP || '';
 
-
-app.get('/', function(req, res) {
-    res.render('home');
-});
-
-app.get('/landing', isLoggedIn, function(req, res) {
-    res.render('landing');
-});
-
-app.get('/register', function(req, res) {
-    res.render('register');
-});
-app.post('/register', function(req, res) {
-    console.log(req.body.username);
-    User.register(new User({ username: req.body.username }), req.body.password, function(err, user) {
-        if (err) {
-            console.log(err);
-            return res.render('register');
-        } else {
-            passport.authenticate('local')(req, res, function() {
-                res.render('landing');
-            });
-        }
-    });
-});
-
-app.get('/login', function(req, res) {
-    res.render('login');
-});
-app.post('/login', passport.authenticate('local', {
-    successRedirect: '/landing',
-    failureRedirect: '/login'
-}), function(req, res) {});
-
-
-app.get('/logout', function(req, res) {
-    req.logOut();
-    res.redirect('/');
-});
-
-
-
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/login');
-}
+app.use('/', authRoutes);
 
 app.listen(portNumber, ipAddress, function() {
     console.log('Web app listening for requests');
