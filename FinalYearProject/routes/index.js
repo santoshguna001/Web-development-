@@ -46,6 +46,64 @@ router.post('/register', function(req, res) {
     });
 });
 
+router.get('/reset', function(req, res) {
+    res.render('reset', { sent: false, validate: false, message: '' });
+});
+router.post('/reset', function(req, res) {
+    User.find({ email: req.body.email }, function(err, user) {
+        if (err) {
+            res.render('reset', { sent: false, validate: false, message: 'Database Connectivity error!' });
+        } else {
+            if (user.length == 0) {
+                res.render('reset', { sent: false, validate: false, message: 'No such email registered!' });
+            } else {
+                const nodemailer = require('nodemailer');
+                let fromMail = 'santoshgunashekar@gmail.com';
+                let toMail = req.body.email;
+                let subject = 'SoNA password reset OTP';
+                let preText = 'One Time Password(OTP) is ';
+                req.session.OTP = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+
+                let text = preText + String(req.session.OTP) + '.';
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: 'santoshgunashekar@gmail.com',
+                        pass: process.env.PASSWORD
+                    }
+                });
+                let mailOptions = {
+                    from: fromMail,
+                    to: toMail,
+                    subject: subject,
+                    text: text
+                };
+                transporter.sendMail(mailOptions, (error, response) => {
+                    if (error) {
+                        console.log(error);
+                    }
+                    console.log(response)
+                });
+                res.render('reset', { sent: true, validate: false, error: false });
+            }
+        }
+    });
+});
+
+router.post('/resetGetOTP', function(req, res) {
+    if (req.body.number == req.session.OTP) {
+        res.render('reset', { sent: true, validate: true });
+    } else {
+        res.render('reset', { sent: true, validate: false, error: true });
+    }
+});
+
+router.post('/resetPassword', function(req, res) {
+    delete req.session.returnTo;
+    res.send('Password Changed');
+});
+
+
 router.get('/login', function(req, res) {
     res.render('login');
 });
