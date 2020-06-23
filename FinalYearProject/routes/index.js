@@ -10,7 +10,9 @@ router.get('/', function(req, res) {
 
 router.get('/reroute', middleware.isLoggedIn, function(req, res) {
     if (req.session.returnTo) {
-        return res.redirect(req.session.returnTo);
+        var url = req.session.returnTo;
+        delete req.session.returnTo;
+        return res.redirect(url);
     } else {
         res.redirect('landing');
     }
@@ -29,7 +31,7 @@ router.get('/register', function(req, res) {
 });
 router.post('/register', function(req, res) {
     console.log(req.body.username);
-    User.register(new User({ username: req.body.username }), req.body.password, function(err, user) {
+    User.register(new User({ username: req.body.username, email: req.body.email }), req.body.password, function(err, user) {
         if (err) {
             console.log(err);
             req.flash('error', err.message);

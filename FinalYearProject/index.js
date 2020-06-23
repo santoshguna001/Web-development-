@@ -33,7 +33,9 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-var url = 'mongodb://localhost:27017/SoNA';
+
+var url = process.env.SONADATABASEURL || 'mongodb://localhost:27017/SoNA';
+console.log(url);
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
