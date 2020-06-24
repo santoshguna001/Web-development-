@@ -14,6 +14,20 @@ router.post('/:id/analyze', middleware.isLoggedIn, function(req, res) {
     if (!req.body.imageAnalysis) {
         req.body.imageAnalysis = 'False'
     }
+    User.findByIdAndUpdate(req.user._id, {
+        twitterid: req.body.twitterid,
+        facebookid: req.body.facebookid,
+        instagramid: req.body.instagramid,
+        redditid: req.body.redditid,
+        imageAnalysis: req.body.imageAnalysis
+    }, function(err, user) {
+        if (err) {
+            console.log(err);
+        } else {
+            user.save();
+            console.log(user)
+        }
+    });
     var process = spawn('python', ["./scripts/index.py",
         req.user._id,
         req.body.facebookid,
@@ -29,6 +43,11 @@ router.post('/:id/analyze', middleware.isLoggedIn, function(req, res) {
 });
 router.post('/', middleware.isLoggedIn, function(req, res) {
     res.send('Fine');
+});
+
+router.get('/analyze', function(req, res) {
+    console.log(req.user._id);
+    res.redirect('/user/' + req.user._id + '/analyze');
 });
 
 
