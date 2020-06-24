@@ -7,7 +7,8 @@ var express = require('express'),
     passportLocalStrategy = require('passport-local-mongoose'),
     User = require('./models/user'),
     flash = require('connect-flash'),
-    authRoutes = require('./routes/index');
+    authRoutes = require('./routes/index'),
+    userRoutes = require('./routes/user');
 
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
@@ -41,6 +42,7 @@ portNumber = process.env.PORT || 3000;
 ipAddress = process.env.IP || '';
 
 app.use('/', authRoutes);
+app.use('/user', userRoutes);
 
 
 app.listen(portNumber, ipAddress, function() {
