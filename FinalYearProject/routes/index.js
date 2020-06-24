@@ -34,7 +34,6 @@ router.get('/register', function(req, res) {
     res.render('register');
 });
 router.post('/register', function(req, res) {
-    console.log(req.body.username);
     User.register(new User({ username: req.body.username, email: req.body.email }), req.body.password, function(err, user) {
         if (err) {
             console.log(err);
@@ -90,7 +89,7 @@ router.post('/forgot', function(req, res, next) {
                 service: 'Gmail',
                 auth: {
                     user: 'santoshgunashekar@gmail.com',
-                    pass: '84392Sis@Google'
+                    pass: process.env.PASSWORD
                 }
             });
             var mailOptions = {
@@ -135,7 +134,7 @@ router.post('/verify/:id', function(req, res) {
     });
 });
 router.get('/reset/:id', function(req, res) {
-    res.render('reset', { id: req.params.id });
+    res.render('reset', { id: req.params.id, task: 'reset' });
 });
 
 router.post('/reset/:id', function(req, res) {
@@ -166,7 +165,7 @@ router.post('/reset/:id', function(req, res) {
                 service: 'Gmail',
                 auth: {
                     user: 'santoshgunashekar@gmail.com',
-                    pass: '84392Sis@Google'
+                    pass: process.env.PASSWORD
                 }
             });
             var mailOptions = {
@@ -187,5 +186,57 @@ router.post('/reset/:id', function(req, res) {
 });
 
 
+router.get('/change', middleware.isLoggedIn, function(req, res) {
+    currentUser = req.user;
+    res.render('reset', { task: 'change' });
+});
+
+router.post('/change', function(req, res) {
+    async.waterfall([
+        function(done) {
+            User.findById(currentUser._id, function(err, user) {
+                if (!user) {
+                    req.flash('error', 'Password reset token is invalid or has expired.');
+                    return res.redirect('back');
+                }
+                if (req.body.password === req.body.confirm) {
+                    user.setPassword(req.body.password, function(err) {
+
+                        user.save(function(err) {
+                            req.logIn(user, function(err) {
+                                done(err, user);
+                            });
+                        });
+                    })
+                } else {
+                    req.flash("error", "Passwords do not match.");
+                    return res.redirect('back');
+                }
+            });
+        },
+        function(user, done) {
+            var smtpTransport = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                    user: 'santoshgunashekar@gmail.com',
+                    pass: process.env.PASSWORD
+                }
+            });
+            var mailOptions = {
+                to: user.email,
+                from: 'santoshgunashekar@mail.com',
+                subject: 'Your password has been changed',
+                text: 'Hello,\n\n' +
+                    'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
+            };
+            smtpTransport.sendMail(mailOptions, function(err) {
+                req.flash('success', 'Success! Your password has been changed.');
+                done(err);
+            });
+        }
+    ], function(err) {
+        res.redirect('/landing');
+    });
+});
 
 module.exports = router;
