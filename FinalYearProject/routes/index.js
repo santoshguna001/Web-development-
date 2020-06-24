@@ -65,18 +65,22 @@ router.get('/logout', function(req, res) {
     req.logOut();
     res.redirect('/');
 });
-router.get('/forgot', function(req, res) {
-    res.render('forgot', { email: '' });
+router.get('/forgot/:type', function(req, res) {
+    res.render('forgot', { type: req.params.type });
 });
 
 
-router.post('/forgot', function(req, res, next) {
+router.post('/forgot/:type', function(req, res, next) {
     async.waterfall([
         function(done) {
             User.findOne({ email: req.body.email }, function(err, user) {
                 if (!user) {
                     req.flash('error', 'No account with that email address exists.');
-                    return res.redirect('/forgot');
+                    return res.redirect('/forgot/username');
+                }
+                if (req.params.type == 'username') {
+                    req.flash('success', 'Your username is ' + user.username);
+                    return res.redirect('/login');
                 }
                 user.OTP = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
                 user.save(function(err) {
@@ -109,7 +113,7 @@ router.post('/forgot', function(req, res, next) {
         }
     ], function(err) {
         if (err) return next(err);
-        res.redirect('/forgot');
+        res.redirect('/forgot/password');
     });
 });
 
