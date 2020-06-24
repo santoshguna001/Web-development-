@@ -1,46 +1,21 @@
 <%- include('partials/header') %>
-
-    <div class="container">
-        <%if(!sent){%>
-            <%if(message && message.length != 0){%>
-                <div class="alert alert-danger" role="alert">
-                    <%= message %>
+    <div class="row">
+        <div class="col-md-12">
+            <form action="/reset/<%=id%>" method="POST">
+                <legend>Reset Password</legend>
+                <div class="form-group">
+                    <label for="password">New Password</label>
+                    <input type="password" name="password" value="" placeholder="New password" autofocus="autofocus" class="form-control" />
                 </div>
-                <%}%>
-                    <form action="/reset" method="post" style='width: 50%; margin: 5px auto; padding: 100px 100px 20px 20px;'>
-                        <div class="form-group">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" class="form-control" id="email" name='email' placeholder="Enter registered email" required>
-                            </div>
-                            <button type="submit" class="btn btn-secondary" style="margin: 0 auto; display: block;">Submit</button>
-                    </form>
-                    <%} else if(sent && !validate){%>
-                        <%if(error){%>
-                            <div class="alert alert-danger" role="alert">
-                                Wrong OTP! Please enter the correct one
-                            </div>
-                            <%}%>
-                                <form action="/resetGetOTP" method="post" style='width: 50%; margin: 5px auto; padding: 100px 100px 20px 20px;'>
-                                    <div class="form-group">
-                                        <div class="form-group">
-                                            <label for="number">Enter OTP sent to registerd email</label>
-                                            <input type="number" class="form-control" id="number" name='number' placeholder="Enter OTP" required>
-                                        </div>
-                                        <button type="submit" class="btn btn-secondary" style="margin: 0 auto; display: block;">Submit</button>
-                                </form>
-                                <%} else{%>
-                                    <form action="/resetPassword" method="post" style='width: 50%; margin: 5px auto; padding: 100px 100px 20px 20px;'>
-                                        <div class="form-group">
-                                            <div class="form-group">
-                                                <label for="password">Password</label>
-                                                <input type="password" class="form-control" id="password" name='password' placeholder="Enter new password" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-secondary" style="margin: 0 auto; display: block;">Submit</button>
-                                    </form>
-                                    <%}%>
+                <div class="form-group">
+                    <label for="confirm">Confirm Password</label>
+                    <input type="password" name="confirm" value="" placeholder="Confirm password" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-
-                                        </div>
-
-                                        <%- include('partials/footer') %>
+    <%- include('partials/footer') %>

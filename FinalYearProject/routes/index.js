@@ -3,7 +3,10 @@ var router = express.Router();
 var passport = require('passport');
 var User = require('../models/user');
 var middleware = require('../middleware');
-
+var async = require("async");
+var crypto = require("crypto");
+var nodemailer = require("nodemailer");
+const Storage = require('../models/resetFile');
 router.get('/', function(req, res) {
     res.render('home');
 });
@@ -46,64 +49,6 @@ router.post('/register', function(req, res) {
     });
 });
 
-router.get('/reset', function(req, res) {
-    res.render('reset', { sent: false, validate: false, message: '' });
-});
-router.post('/reset', function(req, res) {
-    User.find({ email: req.body.email }, function(err, user) {
-        if (err) {
-            res.render('reset', { sent: false, validate: false, message: 'Database Connectivity error!' });
-        } else {
-            if (user.length == 0) {
-                res.render('reset', { sent: false, validate: false, message: 'No such email registered!' });
-            } else {
-                const nodemailer = require('nodemailer');
-                let fromMail = 'santoshgunashekar@gmail.com';
-                let toMail = req.body.email;
-                let subject = 'SoNA password reset OTP';
-                let preText = 'One Time Password(OTP) is ';
-                req.session.OTP = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-
-                let text = preText + String(req.session.OTP) + '.';
-                const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: {
-                        user: 'santoshgunashekar@gmail.com',
-                        pass: process.env.PASSWORD
-                    }
-                });
-                let mailOptions = {
-                    from: fromMail,
-                    to: toMail,
-                    subject: subject,
-                    text: text
-                };
-                transporter.sendMail(mailOptions, (error, response) => {
-                    if (error) {
-                        console.log(error);
-                    }
-                    console.log(response)
-                });
-                res.render('reset', { sent: true, validate: false, error: false });
-            }
-        }
-    });
-});
-
-router.post('/resetGetOTP', function(req, res) {
-    if (req.body.number == req.session.OTP) {
-        res.render('reset', { sent: true, validate: true });
-    } else {
-        res.render('reset', { sent: true, validate: false, error: true });
-    }
-});
-
-router.post('/resetPassword', function(req, res) {
-    delete req.session.returnTo;
-    res.send('Password Changed');
-});
-
-
 router.get('/login', function(req, res) {
     res.render('login');
 });
@@ -121,6 +66,126 @@ router.get('/logout', function(req, res) {
     req.logOut();
     res.redirect('/');
 });
+router.get('/forgot', function(req, res) {
+    res.render('forgot', { email: '' });
+});
+
+
+router.post('/forgot', function(req, res, next) {
+    async.waterfall([
+        function(done) {
+            User.findOne({ email: req.body.email }, function(err, user) {
+                if (!user) {
+                    req.flash('error', 'No account with that email address exists.');
+                    return res.redirect('/forgot');
+                }
+                user.OTP = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+                user.save(function(err) {
+                    done(err, user);
+                });
+            });
+        },
+        function(user, done) {
+            var smtpTransport = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                    user: 'santoshgunashekar@gmail.com',
+                    pass: '84392Sis@Google'
+                }
+            });
+            var mailOptions = {
+                to: user.email,
+                from: 'santoshgunashekar@gmail.com',
+                subject: 'SoNA Password Reset',
+                text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+                    'Please ignore this email and your password will remain unchanged.\nYour One Time Password(OTP) is ' +
+                    user.OTP
+            };
+            smtpTransport.sendMail(mailOptions, function(err) {
+                console.log('mail sent');
+                Storage.addBlock(user._id, user);
+                req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
+                return res.redirect('/verify/' + user._id);
+            });
+        }
+    ], function(err) {
+        if (err) return next(err);
+        res.redirect('/forgot');
+    });
+});
+
+router.get('/verify/:id', function(req, res) {
+    res.render('verify', { id: req.params.id });
+});
+
+router.post('/verify/:id', function(req, res) {
+    async.waterfall([
+        function(done) {
+            if (req.body.otp == Storage.getBlock(req.params.id).OTP) {
+                Storage.delBlock(req.params.id);
+                req.flash('success', 'OTP Verified!');
+                return res.redirect('/reset/' + req.params.id);
+            } else {
+                req.flash("error", "OTP is incorrect!");
+                return res.redirect('back');
+            }
+        }
+    ], function(err) {
+        res.redirect('/home');
+    });
+});
+router.get('/reset/:id', function(req, res) {
+    res.render('reset', { id: req.params.id });
+});
+
+router.post('/reset/:id', function(req, res) {
+    async.waterfall([
+        function(done) {
+            User.findById(req.params.id, function(err, user) {
+                if (!user) {
+                    req.flash('error', 'Password reset token is invalid or has expired.');
+                    return res.redirect('back');
+                }
+                if (req.body.password === req.body.confirm) {
+                    user.setPassword(req.body.password, function(err) {
+
+                        user.save(function(err) {
+                            req.logIn(user, function(err) {
+                                done(err, user);
+                            });
+                        });
+                    })
+                } else {
+                    req.flash("error", "Passwords do not match.");
+                    return res.redirect('back');
+                }
+            });
+        },
+        function(user, done) {
+            var smtpTransport = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                    user: 'santoshgunashekar@gmail.com',
+                    pass: '84392Sis@Google'
+                }
+            });
+            var mailOptions = {
+                to: user.email,
+                from: 'santoshgunashekar@mail.com',
+                subject: 'Your password has been changed',
+                text: 'Hello,\n\n' +
+                    'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
+            };
+            smtpTransport.sendMail(mailOptions, function(err) {
+                req.flash('success', 'Success! Your password has been changed.');
+                done(err);
+            });
+        }
+    ], function(err) {
+        res.redirect('/landing');
+    });
+});
+
 
 
 module.exports = router;
