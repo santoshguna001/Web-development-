@@ -29,7 +29,7 @@ router.post('/:id/analyze', middleware.isLoggedIn, function(req, res) {
         }
     });
     var process = spawn('python', ["./scripts/index.py",
-        req.user._id,
+        req.user.username,
         req.body.facebookid,
         req.body.instagramid,
         req.body.redditid,

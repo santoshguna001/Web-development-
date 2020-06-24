@@ -34,7 +34,7 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-var url = process.env.DATABASEURL || 'mongodb://localhost:27017/SoNA';
+var url = process.env.DATABASE || 'mongodb://localhost:27017/SoNA';
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
