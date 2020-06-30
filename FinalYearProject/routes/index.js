@@ -8,7 +8,7 @@ var crypto = require("crypto");
 var nodemailer = require("nodemailer");
 const Storage = require('../models/resetFile');
 router.get('/', function(req, res) {
-    res.render('home');
+    res.render('landing');
 });
 
 router.get('/reroute', middleware.isLoggedIn, function(req, res) {
@@ -18,12 +18,16 @@ router.get('/reroute', middleware.isLoggedIn, function(req, res) {
         delete req.session.returnTo;
         return res.redirect(url);
     } else {
-        res.redirect('landing');
+        res.redirect('/home');
     }
 });
 
-router.get('/landing', middleware.isLoggedIn, function(req, res) {
-    res.render('landing');
+router.get('/home', middleware.isLoggedIn, function(req, res) {
+    res.render('home');
+});
+
+router.get('/settings', middleware.isLoggedIn, function(req, res) {
+    res.render('settings');
 });
 
 router.get('/secret', middleware.isLoggedIn, function(req, res) {
@@ -34,15 +38,23 @@ router.get('/register', function(req, res) {
     res.render('register');
 });
 router.post('/register', function(req, res) {
-    User.register(new User({ username: req.body.username, email: req.body.email }), req.body.password, function(err, user) {
-        if (err) {
-            console.log(err);
-            req.flash('error', err.message);
-            return res.redirect('register');
+    User.find({ email: req.body.email }, function(err, user) {
+        if (user) {
+            console.log(user);
+            req.flash('error', 'This email is already registered, Try signing in, instead!');
+            return res.redirect('/register');
         } else {
-            passport.authenticate('local')(req, res, function() {
-                req.flash('success', 'Welcome to SoNA, ' + user.username);
-                res.redirect('landing');
+            User.register(new User({ username: req.body.username, email: req.body.email }), req.body.password, function(err, user) {
+                if (err) {
+                    console.log(err);
+                    req.flash('error', err.message);
+                    return res.redirect('register');
+                } else {
+                    passport.authenticate('local')(req, res, function() {
+                        req.flash('success', 'Welcome to SoNA, ' + user.username);
+                        res.redirect('home');
+                    });
+                }
             });
         }
     });
@@ -185,7 +197,8 @@ router.post('/reset/:id', function(req, res) {
             });
         }
     ], function(err) {
-        res.redirect('/landing');
+        console.log(err);
+        res.redirect('/');
     });
 });
 
@@ -239,7 +252,8 @@ router.post('/change', function(req, res) {
             });
         }
     ], function(err) {
-        res.redirect('/landing');
+        console.log(err);
+        res.redirect('/');
     });
 });
 
