@@ -1,29 +1,124 @@
-<%- include('../partials/header') %>
+<!DOCTYPE html>
+<html>
 
-    <div class="container">
-        <form action="/user/<%=id%>/analyze" method="post" style='width: 50%; margin: auto auto;'>
-            <div class="form-group">
-                <div class="form-group">
-                    <label for="facebookid">Facebook ID</label>
-                    <input type="text" class="form-control" id="facebookid" name='facebookid' placeholder="Enter facebook id">
-                </div>
-                <div class="form-group">
-                    <label for="instagramid">Instagram ID</label>
-                    <input type="text" class="form-control" id="instagramid" name='instagramid' placeholder="Enter instagram id">
-                </div>
-                <div class="form-group">
-                    <label for="redditid">Reddit ID</label>
-                    <input type="text" class="form-control" id="redditid" name='redditid' placeholder="Enter reddit id">
-                </div>
-                <div class="form-group">
-                    <label for="twitterid">Twitter ID</label>
-                    <input type="text" class="form-control" id="twitterid" name='twitterid' placeholder="Enter twitter id">
-                </div>
-                <div class="checkbox">
-                    <label><input name="imageAnalysis" type="checkbox" value="True"> Image Analysis</label>
-                </div>
-                <button type="submit" class="btn btn-secondary" style="margin: 10px auto; display: block;">Submit</button>
-        </form>
+<head>
+    <title>SoNA</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/index.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <!-- Image and text -->
+            <nav class="navbar navbar-dark bg-dark" id='center-nav'>
+                <a class="navbar-brand" href="/">
+                    <a href="/" class="navbar-brand"><i class="fa fa-pie-chart"></i>   SoNA</a>
+                </a>
+            </nav>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+            <div class="nav collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                </ul>
+                <ul class="nav navbar-nav navbar-nav-right">
+                    <%if(!currentUser){%>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">Sign Up <i class="fa fa-user-plus"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">Login <i class="fa fa-user"></i></a>
+                        </li>
+                        <%}else{%>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Signed in as <strong><%= currentUser.username %></strong></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/logout">Sign out <i class="fa fa-sign-out"></i></a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <svg width="1em" height="100%" viewBox="0 0 16 16" class="bi bi-person-circle" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13.468 12.37C12.758 11.226 11.195 10 8 10s-4.757 1.225-5.468 2.37A6.987 6.987 0 0 0 8 15a6.987 6.987 0 0 0 5.468-2.63z"/>
+                                        <path fill-rule="evenodd" d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                        <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+                                    </svg>
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="/settings">Settings</a>
+                                    <a class="dropdown-item" href="/change">Change password</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="/logout">Sign out</a>
+                                </div>
+                            </li>
+                            <%}%>
+                </ul>
+            </div>
         </div>
+    </nav>
+    <div class="container-fluid" style="margin-top: 56px;">
+        <div class="row">
+            <div class="col-5 col-sm-4 col-md-2" style="padding: 0;">
+                <div class="container-fluid" style="padding: 0;">
+                    <form class="form-inline">
+                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </form>
+                    <%for(var i = 0; i < 20; i++){%>
+                        <div class="row contact" id='contact<%=i%>' style="padding: 0;">
+                            <div class="col-3" style="padding: 0;">
+                                <img class="img-thumbnail rounded-circle" style="width:100%; height: 100%;" src="https://static.toiimg.com/thumb/72975551.cms?width=680&height=512&imgsize=881753" alt="profile">
+                            </div>
+                            <div class="col-9" style="padding-left: 10px; border: none;">
+                                <h5 style="margin-top: 10px;">Contact
+                                    <%=i%>
+                                </h5>
+                                <h6>Last message</h6>
+                            </div>
+                        </div>
+                        <hr style="margin: 2px;">
+                        <%}%>
+                </div>
+            </div>
+            <div class="col" style="padding: 0; margin-left: 30px;">
+                <div class="container-fluid">
+                    <div class="row" style="padding: 0;height: 3em;">
+                        <div class="col-1" style="padding: 0;width: 3em;">
+                            <img class="img-thumbnail rounded-circle" style="width:3em; height: 3em; padding: 0;" src="https://static.toiimg.com/thumb/72975551.cms?width=680&height=512&imgsize=881753" alt="profile">
+                        </div>
+                        <div class="col float-left" style="padding-left: 10px; border: none;">
+                            <h5 style="margin-top: 10px;" id="demo" class="float-left"></h5>
+                            <h6>Last seen</h6>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="container">
+                            <div style="height: 90%;">
+                                <p class="text-left">Contact text 1</p>
+                                <p class="text-left">Contact text 2</p>
+                                <p class="text-right">Text 1</p>
+                                <p class="text-left">Contact text 3</p>
+                                <p class="text-right">Text 2</p>
+                                <p class="text-left">Contact text 4</p>
+                                <p class="text-right">Text 3</p>
+                            </div>
+                            <div class="row align-bottom">
+                                <form action=" " method="post ">
+                                    <input type="text " name="newMessage " placeholder="Enter your message here ">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <%- include('../partials/footer') %>
+    <script type="text/javascript " src="/scripts/chats_screen.js "></script>
+</body>
+
+</html>

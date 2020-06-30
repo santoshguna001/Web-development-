@@ -5,7 +5,6 @@ var User = require('../models/user');
 var middleware = require('../middleware');
 
 router.get('/analyze', middleware.isLoggedIn, function(req, res) {
-    console.log(req.user._id);
     res.redirect('/user/' + req.user._id + '/analyze');
 });
 
